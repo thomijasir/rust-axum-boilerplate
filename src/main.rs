@@ -1,27 +1,22 @@
 mod constant;
 mod routes;
+mod server;
 
-use crate::constant::app_config::AppConfig;
+use constant::AppConfig;
 use dotenvy::dotenv;
+use server::ApplicationServer;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+  // Load Configuration
   dotenv().ok();
   let config = AppConfig::load();
-  println!("config: {:?}", config);
 
-  //   let app = routes::route_app();
-  //   // run our app with hyper, listening globally on port 3000
-  //   let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-  //   axum::serve(listener, app).await.unwrap();
+  // Initialize Database
+  // TODO: Initialize Database
+
+  // Start Server
+  ApplicationServer::serve(config).await?;
 
   Ok(())
 }
-// async fn main() {
-//   // build our application with a single route
-//   let app = routes::route_app();
-
-//   // run our app with hyper, listening globally on port 3000
-//   let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-//   axum::serve(listener, app).await.unwrap();
-// }
