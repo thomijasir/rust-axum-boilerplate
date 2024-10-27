@@ -14,6 +14,8 @@ pub struct AppConfig {
   pub secret: String,
   #[clap(long, env = "PORT", default_value = "8080")]
   pub port: u16,
+  #[clap(long, env = "TIMEOUT", default_value = "8080")]
+  pub timeout: u64,
 }
 
 impl AppConfig {

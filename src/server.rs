@@ -28,10 +28,13 @@ impl ApplicationServer {
       .allow_headers(Any);
 
     // Define layered services
+    let timeout_secs = config.timeout;
     let route_layer = ServiceBuilder::new()
       .layer(trace)
-      .layer(HandleErrorLayer::new(Self::handle_timeout_error))
-      .timeout(Duration::from_secs(60))
+      .layer(HandleErrorLayer::new(move |err| {
+        Self::handle_timeout_error(err, timeout_secs)
+      }))
+      .timeout(Duration::from_secs(timeout_secs))
       .layer(cors)
       .layer(BufferLayer::new(1024))
       .layer(RateLimitLayer::new(5, Duration::from_secs(1)));
@@ -49,7 +52,10 @@ impl ApplicationServer {
     Ok(())
   }
 
-  async fn handle_timeout_error(err: BoxError) -> (StatusCode, Json<serde_json::Value>) {
+  async fn handle_timeout_error(
+    err: BoxError,
+    timeout: u64,
+  ) -> (StatusCode, Json<serde_json::Value>) {
     if err.is::<tower::timeout::error::Elapsed>() {
       (
         StatusCode::REQUEST_TIMEOUT,
@@ -57,7 +63,7 @@ impl ApplicationServer {
             "error":
                 format!(
                     "request took longer than the configured {} second timeout",
-                    60
+                    timeout
                 )
         })),
       )
@@ -74,9 +80,8 @@ impl ApplicationServer {
   async fn handle_404() -> impl IntoResponse {
     (
       StatusCode::NOT_FOUND,
-      axum::response::Json(serde_json::json!({
-      "errors":{
-      "message": String::from("The requested resource does not exist on this server!"),}
+      Json(json!({
+        "error": format!("NOT FOUND!")
       })),
     )
   }
