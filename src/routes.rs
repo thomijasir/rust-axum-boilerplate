@@ -1,8 +1,25 @@
-use axum::{routing::get, Router};
+#![allow(unused_imports)]
+#![allow(unused_variables)]
+
+use axum::{
+  routing::{delete, get, post, put},
+  Router,
+};
+
+use crate::services::v1::user_controller;
 
 // Router v1
 fn route_main() -> Router {
-  Router::new().route("/hello", get(hello))
+  Router::new()
+    .route("/users", get(user_controller::list_users))
+    .route("/users", post(user_controller::create_user))
+    .route(
+      "/users/:id",
+      get(user_controller::get_user)
+        .put(user_controller::update_user)
+        .delete(user_controller::delete_user),
+    )
+    .route("/hello", get(hello))
 }
 
 // Index Router
