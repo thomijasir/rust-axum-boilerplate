@@ -1,88 +1,92 @@
-// #![allow(unused_imports)]
-// #![allow(dead_code)]
-// #![allow(unused_variables)]
-
-use crate::{constant::AppConfig, routes};
-use axum::response::IntoResponse;
-use axum::{error_handling::HandleErrorLayer, http::StatusCode, BoxError, Json, Router};
-use serde_json::json;
-use std::net::{Ipv4Addr, SocketAddr};
+use crate::{constant, route, utils::errors::HttpError, AppState};
+use axum::{error_handling::HandleErrorLayer, extract::Request, response::IntoResponse};
+use std::net::{
+    // Ipv4Addr,
+    SocketAddr,
+};
+use std::sync::Arc;
 use std::time::Duration;
 use tower::{buffer::BufferLayer, limit::RateLimitLayer, ServiceBuilder};
-use tower_http::{
-  cors::{Any, CorsLayer},
-  trace::TraceLayer,
-};
+use tower_http::{cors::CorsLayer, trace::TraceLayer};
+use tracing::info;
+
 pub struct ApplicationServer;
-
 impl ApplicationServer {
-  pub async fn serve(config: AppConfig) -> anyhow::Result<()> {
-    // Define tracing middleware
-    let trace = TraceLayer::new_for_http();
+    pub async fn serve(app_state: Arc<AppState>) -> Result<(), Box<dyn std::error::Error>> {
+        // Define layered services
+        let timeout_secs = app_state.env.timeout;
+        let route_layer = ServiceBuilder::new()
+            .layer(TraceLayer::new_for_http())
+            .layer(HandleErrorLayer::new(move |err| {
+                Self::handle_timeout_error(err, timeout_secs)
+            }))
+            .timeout(Duration::from_secs(timeout_secs))
+            .layer(Self::cors_config())
+            .layer(BufferLayer::<Request>::new(1024))
+            .layer(RateLimitLayer::new(10240, Duration::from_secs(1)));
 
-    // Define cors with specific origins
-    let whitelist: [&str; 2] = ["http://localhost:5000", "http://localhost:8080"];
-    let cors = CorsLayer::new()
-      .allow_origin(whitelist.map(|origin| origin.parse().unwrap()))
-      .allow_methods(Any)
-      .allow_headers(Any);
+        let app = route::create()
+            .with_state(app_state.clone())
+            .layer(route_layer)
+            .fallback(Self::handle_404);
 
-    // Define layered services
-    let timeout_secs = config.timeout;
-    let route_layer = ServiceBuilder::new()
-      .layer(trace)
-      .layer(HandleErrorLayer::new(move |err| {
-        Self::handle_timeout_error(err, timeout_secs)
-      }))
-      .timeout(Duration::from_secs(timeout_secs))
-      .layer(cors)
-      .layer(BufferLayer::new(1024))
-      .layer(RateLimitLayer::new(5, Duration::from_secs(1)));
-
-    // build our application with a single route
-    let app: Router = routes::route_app()
-      .fallback(Self::handle_404)
-      .layer(route_layer);
-
-    let port: u16 = config.port;
-    let addr: SocketAddr = SocketAddr::from((Ipv4Addr::UNSPECIFIED, port));
-    println!("Server running on http://{}", addr);
-    let listener: tokio::net::TcpListener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
-    Ok(())
-  }
-
-  async fn handle_timeout_error(
-    err: BoxError,
-    timeout: u64,
-  ) -> (StatusCode, Json<serde_json::Value>) {
-    if err.is::<tower::timeout::error::Elapsed>() {
-      (
-        StatusCode::REQUEST_TIMEOUT,
-        Json(json!({
-            "error":
-                format!(
-                    "request took longer than the configured {} second timeout",
-                    timeout
-                )
-        })),
-      )
-    } else {
-      (
-        StatusCode::INTERNAL_SERVER_ERROR,
-        Json(json!({
-            "error": format!("unhandled internal error: {}", err)
-        })),
-      )
+        let port: u16 = app_state.env.port;
+        // let addr: SocketAddr = SocketAddr::from((Ipv4Addr::UNSPECIFIED, port));
+        let addr: SocketAddr = SocketAddr::from(([127, 0, 0, 1], port));
+        let listener: tokio::net::TcpListener = tokio::net::TcpListener::bind(addr).await?;
+        info!("🚀 Server has launched on http://{addr}");
+        axum::serve(listener, app)
+            .with_graceful_shutdown(Self::shutdown_signal())
+            .await
+            .expect("server error");
+        Ok(())
     }
-  }
+    fn cors_config() -> CorsLayer {
+        CorsLayer::new()
+            .allow_origin(
+                constant::CORS_WHITELIST
+                    .iter()
+                    .map(|origin| origin.parse().expect("invalid CORS origin"))
+                    .collect::<Vec<_>>(),
+            )
+            .allow_methods(constant::METHOD_ALLOW)
+            .allow_headers(constant::HEADER_ALLOW)
+    }
+    async fn handle_timeout_error(
+        err: Box<dyn std::error::Error + Send + Sync>,
+        timeout: u64,
+    ) -> impl IntoResponse {
+        if err.is::<tower::timeout::error::Elapsed>() {
+            let msg = format!("Request exceeded {} second timeout", timeout);
+            HttpError::timeout(msg)
+        } else {
+            HttpError::server_error("An unexpected error occurred")
+        }
+    }
+    async fn shutdown_signal() {
+        let ctrl_c = async {
+            tokio::signal::ctrl_c()
+                .await
+                .expect("failed to install Ctrl+C handler");
+        };
 
-  async fn handle_404() -> impl IntoResponse {
-    (
-      StatusCode::NOT_FOUND,
-      Json(json!({
-        "error": format!("NOT FOUND!")
-      })),
-    )
-  }
+        #[cfg(unix)]
+        let terminate = async {
+            tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+                .expect("failed to install signal handler")
+                .recv()
+                .await;
+        };
+
+        #[cfg(not(unix))]
+        let terminate = std::future::pending::<()>();
+        tokio::select! {
+            _ = ctrl_c => {},
+            _ = terminate => {},
+        }
+        info!("Shutdown signal received, starting graceful shutdown");
+    }
+    async fn handle_404() -> impl IntoResponse {
+        HttpError::not_found("The requested resource was not found")
+    }
 }

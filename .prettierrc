@@ -1,0 +1,6 @@
+{
+  "trailingComma": "none",
+  "bracketSameLine": true,
+  "bracketSpacing": true,
+  "printWidth": 80
+}

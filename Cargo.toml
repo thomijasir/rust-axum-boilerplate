@@ -1,17 +1,26 @@
 [package]
-name = "rust_axum_boilerplate"
+name = "axum_boilerplate"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.91"
-axum = "0.7.7"
-chrono = { version = "0.4.38", features = ["serde"] }
-clap = { version = "4.3.21", features = ["derive", "env"] }
-dotenvy = "0.15.7"
-rand = "0.8.5"
+dotenv = "0.15.0"
+clap = { version = "4.5.21", features = ["derive", "env"] }
+axum = { version = "0.7.9", features = ["multipart"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.41.0", features = ["full"] }
 tower = { version = "0.5.1", features = ["timeout", "buffer", "limit"] }
 tower-http = { version = "0.6.1", features = ["trace", "cors"] }
+validator = { version = "0.19.0", features = ["derive"] }
+tracing = "0.1.40"
+tracing-appender = "0.2.2"
+tracing-subscriber = "0.3.16"
+axum_typed_multipart = "0.13.2"
+diesel = { version = "2.2.7", features = ["postgres", "r2d2", "chrono", "numeric", "serde_json"] }
+rand = "0.8.5"
+chrono = { version = "0.4", features = ["serde"] }
+argon2 = "0.5"
+jsonwebtoken = "9.3.1"
+bigdecimal = { version = "0.4.7", features = ["serde"] }
+lettre = "0.11.15"
