@@ -4,7 +4,7 @@ use crate::{
     AppState,
 };
 use axum::{
-    extract::{Json, State},
+    extract::State,
     // Extension,
 };
 use serde_json::json;
@@ -13,7 +13,7 @@ use std::sync::Arc;
 pub async fn get_all_users(
     // Extension(_token): Extension<String>,
     State(_state): State<Arc<AppState>>,
-    Json(_body): Json<serde_json::Value>,
+    // Json(_body): Json<serde_json::Value>,
     // Query(_params): Query<HashMap<String, String>>,
 ) -> Result<HttpResponse, HttpError> {
     let data = json!({
