@@ -17,7 +17,13 @@ tracing = "0.1.40"
 tracing-appender = "0.2.2"
 tracing-subscriber = "0.3.16"
 axum_typed_multipart = "0.13.2"
-diesel = { version = "2.2.7", features = ["postgres", "r2d2", "chrono", "numeric", "serde_json"] }
+diesel = { version = "2.2.7", features = [
+  "postgres",
+  "r2d2",
+  "chrono",
+  "numeric",
+  "serde_json",
+] }
 rand = "0.8.5"
 chrono = { version = "0.4", features = ["serde"] }
 argon2 = "0.5"

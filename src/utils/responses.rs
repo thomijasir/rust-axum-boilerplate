@@ -1,7 +1,6 @@
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
-use serde_json::json;
 use std::fmt;
 use std::fmt::Display;
 
@@ -29,17 +28,33 @@ impl Display for ResponsesMessage {
     }
 }
 
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct HttpResponseFormat<T = serde_json::Value>
+where
+    T: serde::Serialize,
+{
+    pub success: bool,
+    pub message: String,
+    pub data: Option<T>,
+}
+
+use serde::Serialize;
+
 #[derive(Debug, Clone)]
-pub struct HttpResponse {
+pub struct HttpResponse<T = serde_json::Value>
+where
+    T: Serialize,
+{
     pub message: String,
     pub status: StatusCode,
-    pub data: Option<serde_json::Value>,
+    pub data: Option<T>,
 }
-impl HttpResponse {
+
+impl<T: Serialize> HttpResponse<T> {
     pub fn new(
         message: impl Into<String>,
         status: StatusCode,
-        data: Option<serde_json::Value>,
+        data: Option<T>,
     ) -> Self {
         HttpResponse {
             message: message.into(),
@@ -47,52 +62,55 @@ impl HttpResponse {
             data,
         }
     }
+
     fn get_message(
         message: Option<String>,
-        default: ResponsesMessage,
+        default: &str,
     ) -> String {
         message.unwrap_or_else(|| default.to_string())
     }
-    // Use for get method
+
     pub fn ok(
-        data: Option<serde_json::Value>,
+        data: Option<T>,
         msg: Option<String>,
     ) -> Self {
         HttpResponse {
             status: StatusCode::OK,
-            message: Self::get_message(msg, ResponsesMessage::OK),
+            message: Self::get_message(msg, "OK"),
             data,
         }
     }
-    // Use for post, put, and patch
+
     pub fn created(
-        data: Option<serde_json::Value>,
+        data: Option<T>,
         msg: Option<String>,
     ) -> Self {
         HttpResponse {
             status: StatusCode::CREATED,
-            message: Self::get_message(msg, ResponsesMessage::CREATED),
+            message: Self::get_message(msg, "CREATED"),
             data,
         }
     }
-    // use for delete
-    pub fn delete(id: String) -> Self {
+
+    pub fn delete(id: String) -> HttpResponse<()> {
         HttpResponse {
             status: StatusCode::OK,
             message: format!("DELETED:{id}"),
             data: None,
         }
     }
+
     pub fn into_http_response(self) -> Response {
-        let body = json!({
-            "success": true,
-            "message": self.message,
-            "data": self.data,
-        });
-        (self.status, Json(body)).into_response()
+        let format = HttpResponseFormat {
+            success: self.status.is_success(),
+            message: self.message,
+            data: self.data,
+        };
+        (self.status, Json(format)).into_response()
     }
 }
-impl fmt::Display for HttpResponse {
+
+impl<T: Serialize> fmt::Display for HttpResponse<T> {
     fn fmt(
         &self,
         f: &mut fmt::Formatter<'_>,
@@ -104,7 +122,8 @@ impl fmt::Display for HttpResponse {
         )
     }
 }
-impl IntoResponse for HttpResponse {
+
+impl<T: Serialize> IntoResponse for HttpResponse<T> {
     fn into_response(self) -> Response {
         self.into_http_response()
     }

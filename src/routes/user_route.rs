@@ -6,5 +6,7 @@ use crate::controllers::user_controller;
 use crate::AppState;
 
 pub fn router() -> Router<Arc<AppState>> {
-    Router::new().route("/", get(user_controller::get_all_users))
+    Router::new()
+        .route("/", get(user_controller::get_all_users_use_struct))
+        .route("/json", get(user_controller::get_all_users_use_json))
 }
