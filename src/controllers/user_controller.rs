@@ -11,6 +11,13 @@ use axum::{
 use serde_json::json;
 use std::sync::Arc;
 
+#[utoipa::path(
+    get,
+    path = "/api/v1/users",
+    responses(
+        (status = 200, description = "List users", body = [UserData])
+    )
+)]
 pub async fn get_all_users_use_struct(
     // Extension(_token): Extension<String>,
     State(_state): State<Arc<AppState>>,
@@ -34,6 +41,13 @@ pub async fn get_all_users_use_struct(
     ))
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/v1/users/json",
+    responses(
+        (status = 200, description = "List users as JSON", body = serde_json::Value)
+    )
+)]
 pub async fn get_all_users_use_json(
     // Extension(_token): Extension<String>,
     State(_state): State<Arc<AppState>>,

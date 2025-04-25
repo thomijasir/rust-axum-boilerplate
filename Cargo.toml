@@ -4,19 +4,38 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+# Loads environment variables from a .env file
 dotenv = "0.15.0"
+
+# Command-line argument parsing and environment variable support
 clap = { version = "4.5.21", features = ["derive", "env"] }
+
+# Main web framework for building APIs
 axum = { version = "0.7.9", features = ["multipart"] }
+
+# Serialization/deserialization for Rust data structures
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+
+# Asynchronous runtime for Rust
 tokio = { version = "1.41.0", features = ["full"] }
+
+# Tower middleware and HTTP utilities for axum
 tower = { version = "0.5.1", features = ["timeout", "buffer", "limit"] }
 tower-http = { version = "0.6.1", features = ["trace", "cors"] }
+
+# Data validation for structs
 validator = { version = "0.19.0", features = ["derive"] }
+
+# Structured, high-performance logging
 tracing = "0.1.40"
 tracing-appender = "0.2.2"
 tracing-subscriber = "0.3.16"
+
+# Typed multipart form support for axum
 axum_typed_multipart = "0.13.2"
+
+# Diesel ORM for database access (PostgreSQL, connection pooling, date/time, numeric, JSON)
 diesel = { version = "2.2.7", features = [
   "postgres",
   "r2d2",
@@ -24,9 +43,17 @@ diesel = { version = "2.2.7", features = [
   "numeric",
   "serde_json",
 ] }
+
+# Utilities for randomness, date/time, cryptography, and math
 rand = "0.8.5"
 chrono = { version = "0.4", features = ["serde"] }
 argon2 = "0.5"
 jsonwebtoken = "9.3.1"
 bigdecimal = { version = "0.4.7", features = ["serde"] }
+
+# Email sending library
 lettre = "0.11.15"
+
+# OpenAPI generation and Swagger UI for API documentation
+utoipa = { version = "4", features = ["axum_extras"] }
+utoipa-swagger-ui = { version = "5", features = ["axum"] }
