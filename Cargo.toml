@@ -49,7 +49,7 @@ rand = "0.8.5"
 chrono = { version = "0.4", features = ["serde"] }
 argon2 = "0.5"
 jsonwebtoken = "9.3.1"
-bigdecimal = { version = "0.4.7", features = ["serde"] }
+bigdecimal = { version = "0.4.8", features = ["serde"] }
 
 # Email sending library
 lettre = "0.11.15"

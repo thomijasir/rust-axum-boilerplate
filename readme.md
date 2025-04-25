@@ -1,39 +1,58 @@
 # Rust Axum Boilerplate
 
-This is a boilerplate for rust Axum web framework.
+A production-ready boilerplate for building robust web APIs and services using the [Axum](https://github.com/tokio-rs/axum) web framework in Rust. This template integrates best practices for structure, security, validation, error handling, logging, and more.
 
 ## Features
 
-- Rust integration
-- Axum integration
-- Typed Multipart integration
-- Validation integration
-- Cache integration
-- Error handling integration
-- Logger integration
-- Environment variables integration
-- Configuration file integration
-- Formatting with rustfmt
+- Axum web framework integration
+- Typed Multipart support
+- Input validation
+- Centralized error handling
+- Structured logging
+- Environment variable management
+- YAML/JSON configuration support
+- Database integration (Diesel ORM)
+- Connection pooling
+- Caching layer
+- Formatting with `rustfmt`
+- Automatic generation of Swagger/OpenAPI documentation
+- Standard Logger integration
+- CLEAN and SOLID code structure
 
-## To run and intall dependencies
+## Getting Started
 
-```
-cargo run
-```
+### Prerequisites
+- [Rust](https://www.rust-lang.org/tools/install)
+- [Diesel CLI](https://diesel.rs/guides/getting-started/)
+- PostgreSQL (or your configured DB)
 
-## To Watch and run
+### Installation & Running
 
-```
-cargo watch -q -c -w src/ -x run
-```
-
-## To Build
-
-```
+Clone the repository and install dependencies:
+```sh
+git clone <repo-url>
+cd axum-boilerplate
 cargo build
 ```
 
-## Diesel command
+Run the server:
+```sh
+cargo run
+```
+
+### Development: Watch & Hot Reload
+
+```sh
+cargo watch -q -c -w src/ -x run
+```
+
+### Build for Production
+
+```sh
+cargo build --release
+```
+
+## Database Migrations (Diesel)
 
 ```sh
 diesel migration run
@@ -43,72 +62,68 @@ diesel migration create create_your_table_name
 diesel print-schema > src/schema/table.rs
 ```
 
-## Features to add
+## Environment Configuration
 
-- Add transactions contacts
-- Add transactions remitance
-- Add transactions conversion
+Copy `.env.example` to `.env` and set your environment variables:
+```sh
+cp .env.example .env
+```
 
-Let me analyze the users controller code for production readiness. I'll check
-several key aspects:
+## Project Structure
 
-Error Handling Database Operations Input Validation Security Logging Performance
-Code Organization Issues I've identified:
+- `src/` - Main application source code
+- `migrations/` - Diesel database migrations
+- `logs/` - Log output
+- `scripts/` - Utility scripts
 
-Error Handling: Generic error messages in database operations could expose
-sensitive information No specific error types for different database failures
-Server errors don't have unique identifiers for tracking
+## API Documentation
 
-Database Operations: No transaction management for critical operations No retry
-mechanism for temporary database failures No connection pooling optimization
+- Public API endpoints are defined in `src/routes/` and `src/controllers/`.
+- Inline documentation is provided for complex logic.
+- Error scenarios and handling are documented in controller files.
+- **TODO:** Add OpenAPI/Swagger docs for endpoints.
 
-Input Validation: No validation for email format No validation for name
-length/format No sanitization of input parameters No rate limiting
+## Production Readiness Checklist
 
-Security: Debug println! statement in production code No input sanitization
-against SQL injection (though using Diesel ORM helps) No audit logging for
-sensitive operations
+### Security & Error Handling
+- [ ] Remove debug `println!` statements
+- [ ] Implement structured logging for all operations
+- [ ] Add unique error identifiers for tracking
+- [ ] Use proper error types (not generic server errors)
+- [ ] Sanitize and validate all inputs
 
-Logging: Insufficient logging for critical operations No structured logging
-Debug print statement instead of proper logging
+### Database & Performance
+- [ ] Connection pooling optimization
+- [ ] Transaction management for critical operations
+- [ ] Retry mechanism for temporary failures
+- [ ] Pagination for GET endpoints
+- [ ] Request timeouts
+- [ ] Caching where appropriate
 
-Performance: No pagination in GET endpoint No caching mechanism No timeout
-handling
+### Input Validation & Business Logic
+- [ ] Email format validation
+- [ ] Input length/format validation
+- [ ] Rate limiting
+- [ ] Input sanitization
 
-Code Organization: Some repeated error handling code No documentation for public
-API endpoints
+### Monitoring & Logging
+- [ ] Audit logging for sensitive operations
+- [ ] Structured logging
+- [ ] Performance metrics
 
-Task Completed The code is NOT production-ready. Here are the critical issues
-that need to be addressed:
+### Documentation
+- [ ] API documentation (OpenAPI/Swagger)
+- [ ] Document error scenarios and handling
+- [ ] Inline documentation for complex logic
 
-Critical Issues:
+## Contribution
 
-## Security & Error Handling
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
-Remove debug println! statements Implement proper structured logging for all
-operations Add unique error identifiers for better tracking Implement proper
-error types instead of generic server errors Sanitize and validate all inputs
+## License
 
-## Database & Performance
+See [LICENSE](LICENSE) for details.
 
-[DONE] Implement connection pooling optimization Add transaction management for
-data consistency Implement retry mechanism for temporary failures Add pagination
-for GET endpoint to prevent large data dumps Add request timeouts Implement
-caching where appropriate
+---
 
-## Input Validation & Business Logic
-
-Add email format validation Add input length/format validation Implement rate
-limiting Add proper input sanitization
-
-## Monitoring & Logging
-
-Add audit logging for sensitive operations Implement structured logging Add
-performance metrics Remove debug prints
-
-## Documentation
-
-Add API documentation Document error scenarios and handling Add inline
-documentation for complex logic The code has good basic structure but requires
-significant hardening for production use. The current implementation lacks many
-critical production features around security, performance, and reliability.
+**Note:** This template provides a solid foundation but requires further hardening for full production use. See the checklist above for critical areas to address.
