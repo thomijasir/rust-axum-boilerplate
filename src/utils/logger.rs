@@ -3,12 +3,10 @@ use tracing::{error, level_filters::LevelFilter};
 use tracing_appender::non_blocking::WorkerGuard;
 use crate::config::AppEnv;
 
-pub struct Logger {}
+pub struct Logger;
 
 impl Logger {
     pub fn init(app_env: &AppEnv) -> WorkerGuard {
-        let file_logger = tracing_appender::rolling::daily("logs", "daily.log");
-        let console_logger = std::io::stdout();
 
         // TODO update the log level filter for own use
         let max_level = match app_env {
@@ -17,8 +15,14 @@ impl Logger {
         };
 
         let (non_blocking, guard) = match app_env {
-            AppEnv::Development => tracing_appender::non_blocking(console_logger),
-            AppEnv::Production => tracing_appender::non_blocking(file_logger),
+            AppEnv::Development => {
+                let console_logger = std::io::stdout();
+                tracing_appender::non_blocking(console_logger)
+            },
+            AppEnv::Production => {
+                let file_logger = tracing_appender::rolling::daily("logs", "daily.log");
+                tracing_appender::non_blocking(file_logger)
+            }
         };
 
         tracing_subscriber::fmt()
