@@ -22,6 +22,7 @@ A production-ready boilerplate for building robust web APIs and services using t
 ## Getting Started
 
 ### Prerequisites
+
 - [Rust](https://www.rust-lang.org/tools/install)
 - [Diesel CLI](https://diesel.rs/guides/getting-started/)
 - PostgreSQL (or your configured DB)
@@ -29,6 +30,7 @@ A production-ready boilerplate for building robust web APIs and services using t
 ### Installation & Running
 
 Clone the repository and install dependencies:
+
 ```sh
 git clone <repo-url>
 cd axum-boilerplate
@@ -36,6 +38,7 @@ cargo build
 ```
 
 Run the server:
+
 ```sh
 cargo run
 ```
@@ -57,6 +60,7 @@ cargo build --release
 ```sh
 diesel migration run
 diesel migration redo
+diesel migration revert
 diesel migration generate <migration_name>
 diesel migration create create_your_table_name
 diesel print-schema > src/schema/table.rs
@@ -65,6 +69,7 @@ diesel print-schema > src/schema/table.rs
 ## Environment Configuration
 
 Copy `.env.example` to `.env` and set your environment variables:
+
 ```sh
 cp .env.example .env
 ```
@@ -86,6 +91,7 @@ cp .env.example .env
 ## Production Readiness Checklist
 
 ### Security & Error Handling
+
 - [ ] Remove debug `println!` statements
 - [ ] Implement structured logging for all operations
 - [ ] Add unique error identifiers for tracking
@@ -93,6 +99,7 @@ cp .env.example .env
 - [ ] Sanitize and validate all inputs
 
 ### Database & Performance
+
 - [ ] Connection pooling optimization
 - [ ] Transaction management for critical operations
 - [ ] Retry mechanism for temporary failures
@@ -101,17 +108,20 @@ cp .env.example .env
 - [ ] Caching where appropriate
 
 ### Input Validation & Business Logic
+
 - [ ] Email format validation
 - [ ] Input length/format validation
 - [ ] Rate limiting
 - [ ] Input sanitization
 
 ### Monitoring & Logging
+
 - [ ] Audit logging for sensitive operations
 - [ ] Structured logging
 - [ ] Performance metrics
 
 ### Documentation
+
 - [ ] API documentation (OpenAPI/Swagger)
 - [ ] Document error scenarios and handling
 - [ ] Inline documentation for complex logic
