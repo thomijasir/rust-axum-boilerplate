@@ -2,6 +2,8 @@
 
 A production-ready boilerplate for building robust web APIs and services using the [Axum](https://github.com/tokio-rs/axum) web framework in Rust. This template integrates best practices for structure, security, validation, error handling, logging, and more.
 
+![Rust Axum Boilerplate](https://github.com/thomijasir/rust-axum-boilerplate)
+
 ## Features
 
 - Axum web framework integration
@@ -18,6 +20,7 @@ A production-ready boilerplate for building robust web APIs and services using t
 - Automatic generation of Swagger/OpenAPI documentation
 - Standard Logger integration
 - CLEAN and SOLID code structure
+- Atomicity and concurrency support (Postgres preconfigured)
 
 ## Getting Started
 

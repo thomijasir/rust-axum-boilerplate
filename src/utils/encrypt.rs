@@ -49,7 +49,7 @@ pub fn verify(
         PasswordHash::new(hashed_password).map_err(|_| PasswordError::HashingInvalid)?;
     let password_matches = Argon2::default()
         .verify_password(password.as_bytes(), &parsed_hash)
-        .map_or(false, |_| true);
+        .is_ok();
     Ok(password_matches)
 }
 
