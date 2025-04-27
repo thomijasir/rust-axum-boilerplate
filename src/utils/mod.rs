@@ -1,6 +1,7 @@
 pub mod cache;
 pub mod encrypt;
 pub mod errors;
+pub mod extractor;
 pub mod generator;
 pub mod generator_account;
 pub mod logger;

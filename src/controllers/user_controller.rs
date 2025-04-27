@@ -21,7 +21,7 @@ use std::sync::Arc;
 pub async fn get_all_users_use_struct(
     // Extension(_token): Extension<String>,
     State(_state): State<Arc<AppState>>,
-    // Json(_body): Json<serde_json::Value>,
+    // BodyJson(_body): BodyJson<serde_json::Value>,
     // Query(_params): Query<HashMap<String, String>>,
 ) -> Result<HttpResponse<UserData>, HttpError> {
     let user_data = UserData {

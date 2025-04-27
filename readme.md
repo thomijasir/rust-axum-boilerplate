@@ -8,6 +8,7 @@ A production-ready boilerplate for building robust web APIs and services using t
 
 - Axum web framework integration
 - Typed Multipart support
+- Body JSON extractor
 - Input validation
 - Centralized error handling
 - Structured logging
