@@ -1,4 +1,5 @@
-use crate::{constant, route, utils::errors::HttpError, AppState};
+use crate::modules::AppRoute;
+use crate::{constant, utils::errors::HttpError, AppState};
 use axum::{error_handling::HandleErrorLayer, extract::Request, response::IntoResponse};
 use std::net::{
     // Ipv4Addr,
@@ -25,7 +26,7 @@ impl ApplicationServer {
             .layer(BufferLayer::<Request>::new(1024))
             .layer(RateLimitLayer::new(10240, Duration::from_secs(1)));
 
-        let app = route::create()
+        let app = AppRoute::register()
             .with_state(app_state.clone())
             .layer(route_layer)
             .fallback(Self::handle_404);

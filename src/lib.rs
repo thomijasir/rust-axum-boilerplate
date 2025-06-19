@@ -1,16 +1,13 @@
 pub mod config;
 pub mod constant;
-pub mod controllers;
 pub mod database;
+pub mod docs;
+pub mod dto;
 pub mod middlewares;
-pub mod models;
-pub mod route;
-pub mod routes;
+pub mod modules;
 pub mod schema;
 pub mod server;
-pub mod services;
 pub mod utils;
-pub mod docs;
 
 #[derive(Debug, Clone)]
 pub struct AppState {

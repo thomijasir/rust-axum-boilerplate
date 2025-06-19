@@ -1,6 +1,4 @@
 use crate::{
-    models::user_model::UserData,
-    services::user_service,
     utils::{errors::HttpError, responses::HttpResponse},
     AppState,
 };
@@ -10,6 +8,8 @@ use axum::{
 };
 use serde_json::json;
 use std::sync::Arc;
+
+use super::{user_model::UserData, user_service};
 
 #[utoipa::path(
     get,
