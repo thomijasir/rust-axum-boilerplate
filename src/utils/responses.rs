@@ -1,6 +1,7 @@
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
+use serde_json::json;
 use std::fmt;
 use std::fmt::Display;
 
@@ -63,36 +64,29 @@ impl<T: Serialize> HttpResponse<T> {
         }
     }
 
-    fn get_message(
-        message: Option<String>,
-        default: &str,
-    ) -> String {
-        message.unwrap_or_else(|| default.to_string())
-    }
-
     pub fn ok(
-        data: Option<T>,
-        msg: Option<String>,
+        data: T,
+        msg: &str,
     ) -> Self {
         HttpResponse {
             status: StatusCode::OK,
-            message: Self::get_message(msg, "OK"),
-            data,
+            message: msg.to_string(),
+            data: Some(data),
         }
     }
 
     pub fn created(
-        data: Option<T>,
-        msg: Option<String>,
+        data: T,
+        msg: &str,
     ) -> Self {
         HttpResponse {
             status: StatusCode::CREATED,
-            message: Self::get_message(msg, "CREATED"),
-            data,
+            message: msg.to_string(),
+            data: Some(data),
         }
     }
 
-    pub fn delete(id: String) -> HttpResponse<()> {
+    pub fn delete(id: String) -> Self {
         HttpResponse {
             status: StatusCode::OK,
             message: format!("DELETED:{id}"),
@@ -127,4 +121,22 @@ impl<T: Serialize> IntoResponse for HttpResponse<T> {
     fn into_response(self) -> Response {
         self.into_http_response()
     }
+}
+
+pub fn pagination_response_formatted<T: Serialize>(
+    data: Vec<T>,
+    page: i64,
+    limit: i64,
+    total: i64,
+) -> serde_json::Value {
+    let total_pages = (total as f64 / limit as f64).ceil() as i64;
+    json!({
+        "items": data,
+        "pagination": {
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "total_pages": total_pages
+        }
+    })
 }

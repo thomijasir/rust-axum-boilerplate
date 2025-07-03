@@ -1,34 +1,55 @@
+use crate::config::AppEnv;
 use std::{backtrace, panic, thread};
 use tracing::{error, level_filters::LevelFilter};
 use tracing_appender::non_blocking::WorkerGuard;
-use crate::config::AppEnv;
+use tracing_appender::rolling;
+use tracing_subscriber::prelude::*;
 
 pub struct Logger;
 
 impl Logger {
-    pub fn init(app_env: &AppEnv) -> WorkerGuard {
-
-        // TODO update the log level filter for own use
-        let max_level = match app_env {
-            AppEnv::Development => LevelFilter::DEBUG,
-            AppEnv::Production => LevelFilter::INFO,
-        };
-
-        let (non_blocking, guard) = match app_env {
+    pub fn init(app_env: &AppEnv) -> Option<WorkerGuard> {
+        // initialise tracing based on environment and keep guard alive if using non_blocking writer
+        let guard_opt = match app_env {
+            // Development: log everything to stdout with color and DEBUG level
             AppEnv::Development => {
                 let console_logger = std::io::stdout();
-                tracing_appender::non_blocking(console_logger)
-            },
+                let (non_blocking, guard) = tracing_appender::non_blocking(console_logger);
+
+                tracing_subscriber::fmt()
+                    .with_writer(non_blocking)
+                    .with_max_level(LevelFilter::DEBUG)
+                    .init();
+
+                Some(guard)
+            }
+
+            // Production: separate INFO (access) and ERROR logs, still echo INFO to stdout
             AppEnv::Production => {
-                let file_logger = tracing_appender::rolling::daily("logs", "daily.log");
-                tracing_appender::non_blocking(file_logger)
+                let access_file = rolling::daily("logs", "access.log");
+                let error_file = rolling::daily("logs", "error.log");
+
+                use tracing::Level;
+                use tracing_subscriber::filter::filter_fn;
+
+                let access_layer = tracing_subscriber::fmt::layer()
+                    .with_writer(access_file)
+                    .with_ansi(false)
+                    .with_filter(filter_fn(|meta| meta.level() == &Level::INFO));
+
+                let error_layer = tracing_subscriber::fmt::layer()
+                    .with_writer(error_file)
+                    .with_ansi(false)
+                    .with_filter(filter_fn(|meta| meta.level() == &Level::ERROR));
+
+                tracing_subscriber::registry()
+                    .with(access_layer)
+                    .with(error_layer)
+                    .init();
+
+                None
             }
         };
-
-        tracing_subscriber::fmt()
-            .with_writer(non_blocking)
-            .with_max_level(max_level)
-            .init();
 
         // catch panic and log them using tracing instead of default output to StdErr
         panic::set_hook(Box::new(|info| {
@@ -90,6 +111,6 @@ impl Logger {
                 }
             }
         }));
-        guard
+        guard_opt
     }
 }

@@ -35,10 +35,7 @@ pub async fn get_all_users_use_struct(
     user_service::get_print_user();
 
     // Return the response
-    Ok(HttpResponse::ok(
-        Some(user_data),
-        Some("CREDENTIAL_PIN_ADDED".to_string()),
-    ))
+    Ok(HttpResponse::ok(user_data, "CREDENTIAL_PIN_ADDED"))
 }
 
 #[utoipa::path(
@@ -65,8 +62,5 @@ pub async fn get_all_users_use_json(
     user_service::get_print_user();
 
     // Return the response
-    Ok(HttpResponse::ok(
-        Some(user_data),
-        Some("CREDENTIAL_PIN_ADDED".to_string()),
-    ))
+    Ok(HttpResponse::ok(user_data, "CREDENTIAL_PIN_ADDED"))
 }

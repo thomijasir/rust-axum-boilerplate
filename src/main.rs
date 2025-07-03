@@ -7,13 +7,14 @@ use axum_boilerplate::AppState;
 use dotenv::dotenv;
 use std::sync::Arc;
 use std::time::Duration;
+
 #[tokio::main]
 async fn main() {
     // Load Environment
     dotenv().ok();
     let config = Config::load();
     // Init load
-    let _logger = Logger::init(&config.app_env);
+    let _log = Logger::init(&config.app_env);
     // Create in memory cache
     let cache = Cache::new(Duration::from_secs(constant::CACHE_TIMEOUT));
     // Application state

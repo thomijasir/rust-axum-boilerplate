@@ -6,7 +6,8 @@ edition = "2021"
 [dependencies]
 # Loads environment variables from a .env file
 dotenv = "0.15.0"
-
+# Error handling for Rust
+anyhow = "1.0.98"
 # Command-line argument parsing and environment variable support
 clap = { version = "4.5.21", features = ["derive", "env"] }
 
@@ -22,7 +23,7 @@ tokio = { version = "1.41.0", features = ["full"] }
 
 # Tower middleware and HTTP utilities for axum
 tower = { version = "0.5.1", features = ["timeout", "buffer", "limit"] }
-tower-http = { version = "0.6.1", features = ["trace", "cors"] }
+tower-http = { version = "0.6.6", features = ["trace", "cors"] }
 
 # Data validation for structs
 validator = { version = "0.19.0", features = ["derive"] }
@@ -57,3 +58,6 @@ lettre = "0.11.15"
 # OpenAPI generation and Swagger UI for API documentation
 utoipa = { version = "4", features = ["axum_extras"] }
 utoipa-swagger-ui = { version = "5", features = ["axum"] }
+reqwest = { version = "0.12.15", features = ["json"] }
+ulid = "1.2.1"
+toml = "0.8.23"

@@ -22,23 +22,51 @@ impl<T> Deref for BodyJson<T> {
 
 // Helper function to format validation errors
 fn format_validation_errors(errors: &ValidationErrors) -> String {
-    errors
+    // if validation error are empty, return errors
+    let map_error = errors
         .field_errors()
         .iter()
         .map(|(field, errors)| {
-            let messages: Vec<String> = errors
+            let formatted: Vec<String> = errors
                 .iter()
-                .filter_map(|e| e.message.as_ref().map(|m| m.to_string())) // Extract custom messages
+                .map(|e| {
+                    let mut parts: Vec<String> = Vec::new();
+                    // Always include validation code
+                    parts.push(e.code.to_string());
+
+                    // Optionally include custom message
+                    if let Some(msg) = &e.message {
+                        parts.push(msg.to_string());
+                    }
+
+                    // Optionally include provided value param (commonly exists)
+                    if let Some(v) = e.params.get("value") {
+                        parts.push(format!("value={v}"));
+                    }
+
+                    // Include any other params except "value" to be thorough
+                    for (k, v) in e.params.iter().filter(|(k, _)| **k != "value") {
+                        parts.push(format!("{k}={v}"));
+                    }
+
+                    parts.join(" | ")
+                })
                 .collect();
-            // If custom messages exist, use them; otherwise, provide a generic field error
-            if messages.is_empty() {
-                format!("{field}: Invalid value") // Fallback message
+
+            if formatted.is_empty() {
+                format!("{field} | Invalid value")
             } else {
-                format!("{field}: {}", messages.join(", ")) // Join multiple messages if needed
+                format!("{field} | {}", formatted.join(", "))
             }
         })
         .collect::<Vec<String>>()
-        .join(";") // Join field errors with a semicolon and space
+        .join(";"); // Join field errors with a semicolon and space
+
+    if map_error.is_empty() {
+        errors.to_string()
+    } else {
+        map_error
+    }
 }
 
 #[async_trait]
@@ -60,13 +88,18 @@ where
         let Json(value) = Json::<T>::from_request(req, state)
             .await
             // Map Axum's JsonRejection to our HttpError::bad_request
-            .map_err(|_| HttpError::bad_request("INVALID_REQUEST".to_string()))?; // Keep JSON parsing error simple
+            .map_err(|e| HttpError::bad_request(format!("INVALID_BODY_REQUEST:{}", e)))?;
 
         // 2. Attempt to validate the deserialized value using the validator crate
         value
             .validate()
             // Format the validation errors using our helper function
-            .map_err(|e| HttpError::bad_request(format_validation_errors(&e)))?;
+            .map_err(|e| {
+                HttpError::bad_request(format!(
+                    "INVALID_VALIDATION | {}",
+                    format_validation_errors(&e)
+                ))
+            })?;
 
         // 3. If both deserialization and validation succeed, return the wrapped value
         Ok(BodyJson(value))
